@@ -1,35 +1,44 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from pymongo import MongoClient
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-FILE_NAME = "names.txt"
+PORT = os.getenv("PORT")
+MONGO_URI = os.getenv("MONGO_URI")
+
+client = MongoClient(MONGO_URI)
+
+db = client["devopsdb"]
+
+collection = db["names"]
 
 @app.route('/save', methods=['POST'])
 def save_name():
+
     data = request.json
+
     name = data.get('name')
 
-    with open(FILE_NAME, 'a') as file:
-        file.write(name + '\n')
+    collection.insert_one({"name": name})
 
     return jsonify({"message": "Name saved successfully"})
 
 
 @app.route('/names', methods=['GET'])
 def get_names():
-    try:
-        with open(FILE_NAME, 'r') as file:
-            names = file.readlines()
 
-        names = [name.strip() for name in names]
+    names = collection.find()
 
-    except FileNotFoundError:
-        names = []
+    result = []
 
-    return jsonify(names)
+    for item in names:
+        result.append(item["name"])
+
+    return jsonify(result)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(PORT))
