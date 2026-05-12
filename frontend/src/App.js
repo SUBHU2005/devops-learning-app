@@ -25,7 +25,7 @@ function App() {
 
   return (
     <div style={{ padding: '30px' }}>
-      <h1>Production Application  + Feature UI Application </h1>
+      <h1>Learning Git Rebase</h1>
 
       <input
         type="text"
